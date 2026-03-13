@@ -12,6 +12,23 @@ Use this configuration for next project ( genrator Dashboard) to ensure compatib
 | **Electron Builder** | Packaging/Build | `^26.8.1` |
 | **Electron Rebuild** | Native Modules | `^4.0.3` |
 
+### First MVP
+1- Auth ( admin and operator) with clear roles and permissions ( admin can do everything, operator can only do INSERT tasks)
+2- Dashboard ( admin and operator) show Kpi (total customers, total paid, total unpaid, total revenue)
+3- Customer Management ( admin and operator)
+4- Uppaid customers list
+
+### Data Modal
+1- Customer management
+    - name
+    - phone
+    - Amper price
+    - Number of Ampers 
+    - Total price
+    - paid/unpaid
+  
+
+
 ## ⚙️ Configuration Essentials
 
 ### Native Module Handling

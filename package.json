@@ -1,0 +1,40 @@
+{
+  "name": "generator-management",
+  "version": "1.0.0",
+  "description": "Generator Management Dashboard",
+  "author": "Generator Management Team",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --inspect",
+    "postinstall": "electron-builder install-app-deps",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
+    "node-machine-id": "^1.1.12",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.3",
+    "electron": "^34.0.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.generator.management",
+    "productName": "Generator Management Dashboard",
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.png",
+      "verifyUpdateCodeSignature": false
+    },
+    "directories": {
+      "output": "build_out"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "!**/*.sql"
+    ]
+  }
+}

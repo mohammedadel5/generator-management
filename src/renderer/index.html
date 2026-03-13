@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة المولدات</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-container" class="login-wrapper">
+        <div class="login-card card">
+            <div class="login-logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">مولد داش</span>
+            </div>
+            <h2>تسجيل الدخول</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" id="login-username" required class="form-control" placeholder="أدخل اسم المستخدم">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="login-password" required class="form-control" placeholder="أدخل كلمة المرور">
+                </div>
+                <div id="login-error" class="error-message" style="display: none;">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+                <button type="submit" class="btn btn-primary btn-block">دخول</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (Hidden by default) -->
+    <div id="app-container" class="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">مولد داش</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <span class="icon">📊</span>
+                    <span class="text">لوحة التحكم</span>
+                </a>
+                <a href="#" class="nav-item" data-view="customers">
+                    <span class="icon">👥</span>
+                    <span class="text">المشتركين</span>
+                </a>
+                <a href="#" class="nav-item" data-view="unpaid">
+                    <span class="icon">⏳</span>
+                    <span class="text">الديون</span>
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <span class="icon">⚙️</span>
+                    <span class="text">الإعدادات</span>
+                </a>
+            </nav>
+            <div class="license-info">
+                <div class="license-badge-container">
+                    <span id="license-status-badge" class="license-badge">جاري التحقق...</span>
+                </div>
+                <div class="license-details">
+                    <span class="license-label">مرخص لـ:</span>
+                    <span id="license-owner-name" class="license-name">جاري التحميل...</span>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="avatar" id="current-user-avatar">م</div>
+                <div class="details">
+                    <span class="username" id="current-username">مدير النظام</span>
+                    <span class="role" id="current-user-role">مسؤول</span>
+                </div>
+                <button id="logout-btn" class="logout-link" title="تسجيل الخروج">🚪</button>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header">
+                <h1 id="view-title">نظرة عامة</h1>
+                <div class="actions">
+                    <button class="btn btn-primary" id="open-add-modal">+ إضافة مشترك</button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="content-view">
+                <!-- KPI Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card card">
+                        <span class="label">إجمالي المشتركين</span>
+                        <span class="value" id="kpi-total-customers">0</span>
+                    </div>
+                    <div class="kpi-card card">
+                        <span class="label">إجمالي الواصل</span>
+                        <span class="value" id="kpi-total-paid">0 د.ع</span>
+                    </div>
+                    <div class="kpi-card card">
+                        <span class="label">إجمالي الباقي</span>
+                        <span class="value" id="kpi-total-unpaid">0 د.ع</span>
+                    </div>
+                    <div class="kpi-card card highlight">
+                        <span class="label">إجمالي الإيرادات</span>
+                        <span class="value" id="kpi-total-revenue">0 د.ع</span>
+                    </div>
+                </div>
+                
+                <div class="recent-activity-container card">
+                    <h2>آخر المشتركين المضافين</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>المشترك</th>
+                                <th>الهاتف</th>
+                                <th>الأمبيرات</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-customers-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Customers View -->
+            <section id="view-customers" class="content-view" style="display: none;">
+                <div class="card">
+                    <div class="table-header">
+                        <h2>قائمة المشتركين</h2>
+                        <input type="text" id="search-customers" placeholder="بحث عن مشترك..." class="form-control">
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الهاتف</th>
+                                <th>الأمبيرات</th>
+                                <th>السعر الكلي</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-customers-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Unpaid View -->
+            <section id="view-unpaid" class="content-view" style="display: none;">
+                <div class="card">
+                    <h2>المشتركين غير الواصلين</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الهاتف</th>
+                                <th>المبلغ المطلوب</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unpaid-customers-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-settings" class="content-view" style="display: none;">
+                <div class="card">
+                    <h2>إعدادات النظام</h2>
+                    <p class="description">تغيير بيانات الوصول للمسؤول والمشغل</p>
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>بيانات المسؤول (Admin)</h3>
+                            <form id="admin-settings-form">
+                                <div class="form-group">
+                                    <label>اسم المستخدم الجديد</label>
+                                    <input type="text" id="admin-new-username" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>كلمة المرور الجديدة</label>
+                                    <input type="password" id="admin-new-password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">حفظ بيانات المسؤول</button>
+                            </form>
+                        </div>
+                        <div class="settings-card">
+                            <h3>بيانات المشغل (Operator)</h3>
+                            <form id="operator-settings-form">
+                                <div class="form-group">
+                                    <label>اسم المستخدم الجديد</label>
+                                    <input type="text" id="operator-new-username" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>كلمة المرور الجديدة</label>
+                                    <input type="password" id="operator-new-password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">حفظ بيانات المشغل</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="add-customer-modal" class="modal">
+        <div class="modal-content card">
+            <h2 id="modal-title">إضافة مشترك جديد</h2>
+            <form id="add-customer-form">
+                <input type="hidden" name="id" id="customer-id">
+                <div class="form-group">
+                    <label>اسم المشترك</label>
+                    <input type="text" name="name" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="text" name="phone" required class="form-control">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>عدد الأمبيرات</label>
+                        <input type="number" id="num_ampers" name="num_ampers" required class="form-control" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label>سعر الأمبير</label>
+                        <input type="number" id="amper_price" name="amper_price" required class="form-control" value="10000">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>المبلغ الكلي</label>
+                    <input type="number" id="total_price" name="total_price" readonly class="form-control" value="10000">
+                </div>
+                <div class="form-group">
+                    <label>الحالة</label>
+                    <select name="status" class="form-control">
+                        <option value="unpaid">غير واصل</option>
+                        <option value="paid">واصل</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="close-add-modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ المشترك</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Template (Hidden for Screen) -->
+    <div id="receipt-container" class="print-only">
+        <div class="receipt">
+            <div class="receipt-header">
+                <h1>وصل استلام</h1>
+                <p>مولد داش لخدمات الطاقة</p>
+            </div>
+            <div class="receipt-body">
+                <p><strong>التاريخ:</strong> <span id="receipt-date"></span></p>
+                <div class="receipt-divider"></div>
+                <p><strong>المشترك:</strong> <span id="receipt-name"></span></p>
+                <p><strong>الهاتف:</strong> <span id="receipt-phone"></span></p>
+                <p><strong>عدد الأمبيرات:</strong> <span id="receipt-ampers"></span></p>
+                <p><strong>سعر الأمبير:</strong> <span id="receipt-price"></span></p>
+                <p><strong>المبلغ الكلي:</strong> <span id="receipt-total-calc"></span> د.ع</p>
+                <div class="receipt-divider"></div>
+                <h2 class="receipt-total">المبلغ الواصل: <span id="receipt-total"></span> د.ع</h2>
+            </div>
+            <div class="receipt-footer">
+                <p>شكراً لتعاملكم معنا</p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="renderer.js"></script>
+</body>
+</html>
