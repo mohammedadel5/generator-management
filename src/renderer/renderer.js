@@ -45,6 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
         totalRevenue: document.getElementById('kpi-total-revenue')
     };
 
+    // Report Elements
+    const reportMonthSelector = document.getElementById('report-month-selector');
+    const btnPrintReport = document.getElementById('btn-print-report');
+    const btnManualReset = document.getElementById('btn-manual-reset');
+    
+    // Set default report month to current month YYYY-MM
+    if (reportMonthSelector) {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        reportMonthSelector.value = `${yyyy}-${mm}`;
+    }
+
     let allCustomers = [];
 
     // --- License Info ---
@@ -82,6 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
             await updateLicenseInfo();
             await initSettings();
             await updateAllData();
+            
+            // Default to customers view for operators
+            if (user.role !== 'admin') {
+                const customersNavItem = document.querySelector('.nav-item[data-view="customers"]');
+                if (customersNavItem) customersNavItem.click();
+            }
         } else {
             loginContainer.style.display = 'flex';
             appContainer.style.display = 'none';
@@ -133,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'dashboard': 'نظرة عامة',
                 'customers': 'جميع المشتركين',
                 'unpaid': 'الديون والمستحقات',
+                'reports': 'التقارير',
                 'settings': 'الإعدادات'
             };
             viewTitle.textContent = titles[viewId] || 'لوحة التحكم';
@@ -147,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalTitle.textContent = 'إضافة مشترك جديد';
             addCustomerForm.reset();
             customerIdInput.value = '';
+            // Default to today
+            document.getElementById('subscription_date').valueAsDate = new Date();
             calculateTotal();
             showModal(addCustomerModal);
         };
@@ -183,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     num_ampers: parseInt(formData.get('num_ampers')),
                     amper_price: parseFloat(formData.get('amper_price')),
                     total_price: parseFloat(formData.get('total_price')),
-                    status: formData.get('status')
+                    status: formData.get('status'),
+                    subscription_date: formData.get('subscription_date')
                 };
                 
                 if (id) {
@@ -213,9 +236,100 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const unpaid = allCustomers.filter(c => c.status === 'unpaid');
             renderUnpaidRows(unpaid, unpaidCustomersBody);
+            
+            updateReports();
         } catch (err) {
             console.error('Error updating data:', err);
         }
+    }
+
+    // Reports Logic
+    const updateReports = () => {
+        if (!reportMonthSelector) return;
+        
+        const selectedMonth = reportMonthSelector.value; // Format: "YYYY-MM"
+        if (!selectedMonth) return;
+
+        // Filter customers who have a subscription_date starting with the selected YYYY-MM
+        const filteredCustomers = allCustomers.filter(c => {
+            if (!c.subscription_date) return false;
+            return c.subscription_date.startsWith(selectedMonth);
+        });
+
+        const totalCust = filteredCustomers.length;
+        let paid = 0;
+        let unpaid = 0;
+
+        filteredCustomers.forEach(c => {
+            if (c.status === 'paid') paid += (c.total_price || 0);
+            if (c.status === 'unpaid') unpaid += (c.total_price || 0);
+        });
+
+        const revenue = paid + unpaid;
+
+        document.getElementById('report-total-customers').textContent = totalCust;
+        document.getElementById('report-total-paid').textContent = paid.toLocaleString() + ' د.ع';
+        document.getElementById('report-total-unpaid').textContent = unpaid.toLocaleString() + ' د.ع';
+        document.getElementById('report-total-revenue').textContent = revenue.toLocaleString() + ' د.ع';
+    };
+
+    if (reportMonthSelector) {
+        reportMonthSelector.addEventListener('change', updateReports);
+    }
+
+    if (btnPrintReport) {
+        btnPrintReport.addEventListener('click', () => {
+            const selectedMonth = reportMonthSelector.value; // "YYYY-MM"
+            if (!selectedMonth) return;
+
+            const printContainer = document.getElementById('report-print-container');
+            const receiptContainer = document.getElementById('receipt-container');
+            
+            // Hide normal receipt, show report
+            if (receiptContainer) receiptContainer.style.display = 'none';
+            if (printContainer) printContainer.style.display = 'block';
+
+            // Populate report print fields
+            const ownerNameEl = document.getElementById('license-owner-name');
+            const ownerName = ownerNameEl ? ownerNameEl.textContent : '';
+            const reportOwnerEl = document.getElementById('print-report-owner');
+            if (reportOwnerEl) {
+                reportOwnerEl.textContent = ownerName !== 'جاري التحميل...' && ownerName !== '---' ? ownerName : '';
+            }
+
+            document.getElementById('print-report-date').textContent = new Date().toLocaleDateString('ar-IQ');
+            document.getElementById('print-report-month').textContent = selectedMonth;
+            
+            document.getElementById('print-report-customers').textContent = document.getElementById('report-total-customers').textContent;
+            document.getElementById('print-report-paid').textContent = document.getElementById('report-total-paid').textContent;
+            document.getElementById('print-report-unpaid').textContent = document.getElementById('report-total-unpaid').textContent;
+            document.getElementById('print-report-revenue').textContent = document.getElementById('report-total-revenue').textContent;
+
+            setTimeout(() => {
+                window.api.print();
+                
+                // Restore visibility
+                setTimeout(() => {
+                    if (receiptContainer) receiptContainer.style.display = '';
+                    if (printContainer) printContainer.style.display = '';
+                }, 1000);
+            }, 100);
+        });
+    }
+
+    if (btnManualReset) {
+        btnManualReset.addEventListener('click', async () => {
+            if (confirm('تحذير: هل أنت متأكد من تصفير جميع المشتركين الـ "واصل" إلى "غير واصل"؟ لا يمكن التراجع عن هذه العملية.')) {
+                try {
+                    await window.api.manualReset();
+                    await updateAllData();
+                    alert('تمت عملية التصغير بنجاح');
+                } catch (err) {
+                    console.error('Error in manual reset:', err);
+                    alert('حدث خطأ أثناء عملية التصفير');
+                }
+            }
+        });
     }
 
     // Global action functions (bound to window for HTML event handlers)
@@ -235,6 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
             addCustomerForm.num_ampers.value = customer.num_ampers;
             addCustomerForm.amper_price.value = customer.amper_price;
             addCustomerForm.status.value = customer.status;
+            
+            // Set date if available
+            if (customer.subscription_date) {
+                document.getElementById('subscription_date').value = customer.subscription_date;
+            } else {
+                document.getElementById('subscription_date').valueAsDate = new Date();
+            }
+
             calculateTotal();
             showModal(addCustomerModal);
         }
@@ -256,6 +378,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const printReceipt = (customer) => {
         try {
+            const printContainer = document.getElementById('report-print-container');
+            const receiptContainer = document.getElementById('receipt-container');
+            
+            // Hide report, show normal receipt
+            if (printContainer) printContainer.style.display = 'none';
+            if (receiptContainer) receiptContainer.style.display = 'block';
+
+            const ownerNameEl = document.getElementById('license-owner-name');
+            const ownerName = ownerNameEl ? ownerNameEl.textContent : '';
+            const receiptOwnerEl = document.getElementById('receipt-generator-owner');
+            if (receiptOwnerEl) {
+                receiptOwnerEl.textContent = ownerName !== 'جاري التحميل...' && ownerName !== '---' ? ownerName : '';
+            }
+
             document.getElementById('receipt-name').textContent = customer.name;
             document.getElementById('receipt-phone').textContent = customer.phone;
             document.getElementById('receipt-ampers').textContent = customer.num_ampers;

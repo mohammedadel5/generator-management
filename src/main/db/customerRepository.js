@@ -3,10 +3,10 @@ const { getDb } = require('./models');
 const addCustomer = (customer) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
-    const { name, phone, amper_price, num_ampers, total_price, status } = customer;
+    const { name, phone, amper_price, num_ampers, total_price, status, subscription_date } = customer;
     db.run(
-      `INSERT INTO customers (name, phone, amper_price, num_ampers, total_price, status) VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, phone, amper_price, num_ampers, total_price, status],
+      `INSERT INTO customers (name, phone, amper_price, num_ampers, total_price, status, subscription_date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [name, phone, amper_price, num_ampers, total_price, status, subscription_date],
       function (err) {
         if (err) reject(err);
         else resolve({ id: this.lastID, ...customer });
@@ -34,10 +34,10 @@ const getCustomers = (status) => {
 const updateCustomer = (id, customer) => {
   return new Promise((resolve, reject) => {
     const db = getDb();
-    const { name, phone, amper_price, num_ampers, total_price, status } = customer;
+    const { name, phone, amper_price, num_ampers, total_price, status, subscription_date } = customer;
     db.run(
-      `UPDATE customers SET name = ?, phone = ?, amper_price = ?, num_ampers = ?, total_price = ?, status = ? WHERE id = ?`,
-      [name, phone, amper_price, num_ampers, total_price, status, id],
+      `UPDATE customers SET name = ?, phone = ?, amper_price = ?, num_ampers = ?, total_price = ?, status = ?, subscription_date = ? WHERE id = ?`,
+      [name, phone, amper_price, num_ampers, total_price, status, subscription_date, id],
       function (err) {
         if (err) reject(err);
         else resolve(this.changes);
