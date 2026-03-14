@@ -59,6 +59,10 @@ ipcMain.handle('delete-customer', async (event, id) => {
   return await db.deleteCustomer(id);
 });
 
+ipcMain.handle('manual-reset', async () => {
+  return await db.runManualReset();
+});
+
 ipcMain.handle('get-kpis', async () => {
   return await db.getKpis();
 });

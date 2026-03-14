@@ -13,14 +13,17 @@ export const renderCustomerRows = (customers, container) => {
             <td>${c.phone}</td>
             <td>${c.num_ampers}</td>
             <td>${formatCurrency(c.total_price)}</td>
+            <td>${c.subscription_date || '-'}</td>
             <td><span class="status-badge status-${c.status}">${c.status === 'paid' ? 'واصل' : 'غير واصل'}</span></td>
             <td>
-                <button class="btn btn-secondary btn-sm" onclick="window.toggleStatus(${c.id}, '${c.status}')">
-                    ${c.status === 'paid' ? 'إلغاء الوصل' : 'تأكيد الوصل'}
-                </button>
-                <button class="btn btn-secondary btn-sm btn-edit" onclick="window.editCustomer(${c.id})">تعديل</button>
-                <button class="btn btn-primary btn-sm btn-delete" style="background-color: #ef4444;" onclick="window.deleteCustomer(${c.id})">حذف</button>
-                ${c.status === 'paid' ? `<button class="btn btn-primary btn-sm" onclick="window.printReceiptById(${c.id})">طباعة</button>` : ''}
+                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm btn-toggle-status ${c.status === 'paid' ? 'btn-cancel-paid' : 'btn-confirm-paid'}" onclick="window.toggleStatus(${c.id}, '${c.status}')">
+                        ${c.status === 'paid' ? 'إلغاء' : 'تأكيد'}
+                    </button>
+                    <button class="btn btn-secondary btn-sm btn-edit" onclick="window.editCustomer(${c.id})">تعديل</button>
+                    ${c.status === 'paid' ? `<button class="btn btn-primary btn-sm btn-print" onclick="window.printReceiptById(${c.id})">طباعة</button>` : ''}
+                    <button class="btn btn-primary btn-sm btn-delete" style="background-color: #ef4444;" onclick="window.deleteCustomer(${c.id})">حذف</button>
+                </div>
             </td>
         </tr>
     `).join('');

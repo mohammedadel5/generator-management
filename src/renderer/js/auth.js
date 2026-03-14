@@ -35,13 +35,16 @@ export const updateUIForRole = (user) => {
     if (avatarEl) avatarEl.textContent = user.username[0].toUpperCase();
 
     // Role-based restrictions
+    const dashboardNavItem = document.querySelector('.nav-item[data-view="dashboard"]');
     if (user.role !== 'admin') {
         // Operators CAN add, but NOT edit/delete
         if (addModalBtn) addModalBtn.style.display = 'block'; 
         if (settingsNavItem) settingsNavItem.style.display = 'none';
+        if (dashboardNavItem) dashboardNavItem.style.display = 'none';
         document.body.classList.add('role-operator');
     } else {
         if (settingsNavItem) settingsNavItem.style.display = 'flex';
+        if (dashboardNavItem) dashboardNavItem.style.display = 'flex';
         document.body.classList.remove('role-operator');
     }
 };

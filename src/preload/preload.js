@@ -14,5 +14,6 @@ contextBridge.exposeInMainWorld('api', {
   getMachineId: () => ipcRenderer.invoke('get-machine-id'),
   activateLicense: (key) => ipcRenderer.invoke('activate-license', key),
   reloadApp: () => ipcRenderer.send('reload-app'),
+  manualReset: () => ipcRenderer.invoke('manual-reset'),
   print: () => window.print(),
 });
