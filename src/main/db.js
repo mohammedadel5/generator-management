@@ -6,6 +6,7 @@ const authRepo = require('./db/authRepository');
 module.exports = {
   init: models.init,
   getDb: models.getDb,
+  runManualReset: models.runManualReset,
   ...customerRepo,
   ...kpiRepo,
   ...authRepo
